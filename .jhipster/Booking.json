@@ -1,0 +1,72 @@
+{
+  "applications": "*",
+  "changelogDate": "20220928033255",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "booking",
+  "fields": [
+    {
+      "fieldName": "description",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "text"
+    },
+    {
+      "fieldName": "pickDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "returnDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "loadSize",
+      "fieldType": "LoadSize",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "S,M,L,XL"
+    },
+    {
+      "fieldName": "serviceType",
+      "fieldType": "ServiceType",
+      "fieldValues": "WASH_ONLY,WASH_IRON,DRY_CLEAN"
+    },
+    {
+      "fieldName": "image",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "image"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "created",
+      "fieldType": "Instant"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Booking",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "payment",
+      "otherEntityRelationshipName": "booking",
+      "ownerSide": true,
+      "relationshipName": "payment",
+      "relationshipType": "one-to-one"
+    },
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "customer",
+      "otherEntityRelationshipName": "booking",
+      "relationshipName": "customer",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "service": "no"
+}

@@ -1,0 +1,39 @@
+{
+  "applications": "*",
+  "changelogDate": "20220928033257",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "coordinate",
+  "fields": [
+    {
+      "fieldName": "longitude",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "latitude",
+      "fieldType": "Float",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "verified",
+      "fieldType": "Boolean"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Coordinate",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "login",
+      "otherEntityName": "customer",
+      "otherEntityRelationshipName": "location",
+      "ownerSide": true,
+      "relationshipName": "customer",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "service": "no"
+}

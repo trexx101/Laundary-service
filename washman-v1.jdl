@@ -1,0 +1,56 @@
+/** Product sold by the Online store */
+enum Gender {
+    MALE, FEMALE, OTHER
+}
+enum LoadSize {
+    S, M, L, XL
+}
+enum ServiceType {
+    WASH_ONLY, WASH_IRON, DRY_CLEAN
+}
+entity Customer {
+    firstName String required
+    lastName String required
+    gender Gender required
+    email String required pattern(/^[^@\s]+@[^@\s]+\.[^@\s]+$/)
+    phone String
+    addressLine1 String
+    addressLine2 String
+    city String
+    country String
+}
+entity Booking {
+    description TextBlob
+    pickDate LocalDate required
+    returnDate LocalDate required
+    loadSize LoadSize required
+    serviceType ServiceType
+    image ImageBlob
+    status String
+    created Instant
+}
+
+entity Payment {
+    type String
+    status String required
+    updated Instant
+    amount BigDecimal
+    reference String
+    image ImageBlob
+}
+
+entity Coordinate{
+    longitude Float required
+    latitude Float required
+    verified Boolean
+}
+
+relationship OneToOne {
+    Customer{user(login) required} to User
+    Coordinate{customer(login)} to Customer{location}
+
+    Booking{payment(id)} to Payment{booking}
+}
+relationship OneToMany {
+    Customer{booking} to Booking{customer(login) required}
+}

@@ -2,6 +2,7 @@ package com.logia.washman.web.rest;
 
 import com.logia.washman.domain.Booking;
 import com.logia.washman.repository.BookingRepository;
+import com.logia.washman.service.BookingService;
 import com.logia.washman.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,9 +36,11 @@ public class BookingResource {
     private String applicationName;
 
     private final BookingRepository bookingRepository;
+    private final BookingService bookingService;
 
-    public BookingResource(BookingRepository bookingRepository) {
+    public BookingResource(BookingRepository bookingRepository, BookingService bookingService) {
         this.bookingRepository = bookingRepository;
+        this.bookingService = bookingService;
     }
 
     /**
@@ -175,7 +178,28 @@ public class BookingResource {
         if (eagerload) {
             return bookingRepository.findAllWithEagerRelationships();
         } else {
+            log.info("not eager at all. hence {}", eagerload);
             return bookingRepository.findAll();
+        }
+    }
+
+    /**
+     * {@code GET  /manage} : get all the managable bookings.
+     *
+     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of bookings in body.
+     */
+    @GetMapping("/manage/bookings/{status}")
+    public List<Booking> getAllBookings(
+        @RequestParam(required = false, defaultValue = "false") boolean eagerload,
+        @PathVariable String status
+    ) {
+        log.debug("REST request to get all Bookings");
+        if (false) {
+            return bookingRepository.findAllWithEagerRelationships();
+        } else {
+            log.info("not eager at all. hence {}", eagerload);
+            return bookingRepository.findAllBookingOutsideStatus(status);
         }
     }
 
@@ -189,6 +213,22 @@ public class BookingResource {
     public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
         log.debug("REST request to get Booking : {}", id);
         Optional<Booking> booking = bookingRepository.findOneWithEagerRelationships(id);
+        return ResponseUtil.wrapOrNotFound(booking);
+    }
+
+    /**
+     * {@code GET  /bookings/:id} : get the "id" booking.
+     *
+     * @param id the id of the booking to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the booking, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/bookings/progress/{id}")
+    public ResponseEntity<Booking> progressBookingStatus(@PathVariable Long id) {
+        log.debug("REST request to get Booking : {}", id);
+        Optional<Booking> booking = bookingRepository.findOneWithEagerRelationships(id);
+
+        booking = bookingService.progressBookingStatus(booking.get());
+
         return ResponseUtil.wrapOrNotFound(booking);
     }
 

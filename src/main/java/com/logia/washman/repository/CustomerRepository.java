@@ -37,4 +37,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     @Query("select customer from Customer customer left join fetch customer.user where customer.id =:id")
     Optional<Customer> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query("select customer from Customer customer left join fetch customer.user where customer.user.id =:id")
+    Optional<Customer> findOneCustomerByUser(@Param("id") Long id);
 }

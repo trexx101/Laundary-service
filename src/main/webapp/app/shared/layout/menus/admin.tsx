@@ -6,6 +6,9 @@ import { NavDropdown } from './menu-components';
 
 const adminMenuItems = () => (
   <>
+    <MenuItem icon="users" to="/admin/active-booking">
+      Booking Mangmt
+    </MenuItem>
     <MenuItem icon="users" to="/admin/user-management">
       User management
     </MenuItem>

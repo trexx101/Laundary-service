@@ -15,11 +15,17 @@ const initialState: EntityState<IBooking> = {
 };
 
 const apiUrl = 'api/bookings';
+const adminApi = 'api/manage/bookings';
 
 // Actions
 
 export const getEntities = createAsyncThunk('booking/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
   const requestUrl = `${apiUrl}?cacheBuster=${new Date().getTime()}`;
+  return axios.get<IBooking[]>(requestUrl);
+});
+
+export const getAdminEntities = createAsyncThunk('booking/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
+  const requestUrl = `${adminApi}/COMPLETED?cacheBuster=${new Date().getTime()}`;
   return axios.get<IBooking[]>(requestUrl);
 });
 
@@ -73,6 +79,17 @@ export const deleteEntity = createAsyncThunk(
   { serializeError: serializeAxiosError }
 );
 
+export const progressEntityStatus = createAsyncThunk(
+  'booking/progress_entity_status',
+  async (id: string | number, thunkAPI) => {
+    const requestUrl = `${apiUrl}/progress/${id}`;
+    const result = await axios.get<IBooking>(requestUrl);
+    thunkAPI.dispatch(getAdminEntities({}));
+    return result;
+  },
+  { serializeError: serializeAxiosError }
+);
+
 // slice
 
 export const BookingSlice = createEntitySlice({
@@ -89,7 +106,7 @@ export const BookingSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = {};
       })
-      .addMatcher(isFulfilled(getEntities), (state, action) => {
+      .addMatcher(isFulfilled(getEntities, getAdminEntities), (state, action) => {
         const { data } = action.payload;
 
         return {
@@ -104,7 +121,7 @@ export const BookingSlice = createEntitySlice({
         state.updateSuccess = true;
         state.entity = action.payload.data;
       })
-      .addMatcher(isPending(getEntities, getEntity), state => {
+      .addMatcher(isPending(getEntities, getEntity, getAdminEntities), state => {
         state.errorMessage = null;
         state.updateSuccess = false;
         state.loading = true;

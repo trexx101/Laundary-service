@@ -37,4 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select booking from Booking booking left join fetch booking.customer where booking.id =:id")
     Optional<Booking> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query("select distinct booking from Booking booking where booking.status <> :status order by booking.created")
+    List<Booking> findAllBookingOutsideStatus(@Param("status") String status);
 }

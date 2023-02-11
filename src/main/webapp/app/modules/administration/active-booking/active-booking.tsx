@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button, Table } from 'reactstrap';
-import { openFile, byteSize, Translate, TextFormat } from 'react-jhipster';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Table, Input, Row, Col, Badge, Button } from 'reactstrap';
 
-import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 import { useAppDispatch, useAppSelector } from 'app/config/store';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { deleteEntity, getAdminEntities, getEntities, progressEntityStatus } from 'app/entities/booking/booking.reducer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { TextFormat } from 'react-jhipster';
+import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
 
-import { IBooking } from 'app/shared/model/booking.model';
-import { getEntities } from './booking.reducer';
-
-export const Booking = () => {
+export const ActiveBookingPage = () => {
   const dispatch = useAppDispatch();
 
   const location = useLocation();
@@ -18,19 +16,24 @@ export const Booking = () => {
 
   const bookingList = useAppSelector(state => state.booking.entities);
   const loading = useAppSelector(state => state.booking.loading);
+  const updating = useAppSelector(state => state.booking.updating);
 
   useEffect(() => {
-    dispatch(getEntities({}));
+    dispatch(getAdminEntities({}));
   }, []);
 
   const handleSyncList = () => {
-    dispatch(getEntities({}));
+    dispatch(getAdminEntities({}));
   };
+
+  function confirmProgress(id: number) {
+    dispatch(progressEntityStatus(id));
+  }
 
   return (
     <div>
       <h2 id="booking-heading" data-cy="BookingHeading">
-        Bookings
+        Manage all active bookings
         <div className="d-flex justify-content-end">
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} /> Refresh list
@@ -73,7 +76,19 @@ export const Booking = () => {
                   </td>
                   <td>{booking.loadSize}</td>
                   <td>{booking.serviceType}</td>
-                  <td>{booking.status}</td>
+                  <td>
+                    <div className="btn-group flex-btn-group-container">
+                      {booking.status}
+                      <Button
+                        /*to={`/booking/progress/${booking.id}`}*/ onClick={() => dispatch(progressEntityStatus(booking.id))}
+                        color="info"
+                        size="sm"
+                        disabled={updating}
+                      >
+                        <FontAwesomeIcon icon="clipboard-list-check" /> <span className="d-none d-md-inline">Next stage</span>
+                      </Button>
+                    </div>
+                  </td>
                   <td>{booking.created ? <TextFormat type="date" value={booking.created} format={APP_DATE_FORMAT} /> : null}</td>
                   <td>
                     {booking.payment ? (
@@ -86,9 +101,6 @@ export const Booking = () => {
                     <div className="btn-group flex-btn-group-container">
                       <Button tag={Link} to={`/booking/${booking.id}`} color="info" size="sm" data-cy="entityDetailsButton">
                         <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline">View</span>
-                      </Button>
-                      <Button tag={Link} to={`/booking/${booking.id}/edit`} color="primary" size="sm" data-cy="entityEditButton">
-                        <FontAwesomeIcon icon="pencil-alt" /> <span className="d-none d-md-inline">Edit</span>
                       </Button>
                       <Button tag={Link} to={`/booking/${booking.id}/delete`} color="danger" size="sm" data-cy="entityDeleteButton">
                         <FontAwesomeIcon icon="trash" /> <span className="d-none d-md-inline">Delete</span>
@@ -107,4 +119,4 @@ export const Booking = () => {
   );
 };
 
-export default Booking;
+export default ActiveBookingPage;

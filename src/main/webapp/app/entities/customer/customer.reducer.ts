@@ -32,6 +32,15 @@ export const getEntity = createAsyncThunk(
   { serializeError: serializeAxiosError }
 );
 
+export const getEntityByUser = createAsyncThunk(
+  'customer/fetch_entity_by_user',
+  async (id: string | number) => {
+    const requestUrl = `${apiUrl}/user/${id}`;
+    return axios.get<ICustomer>(requestUrl);
+  },
+  { serializeError: serializeAxiosError }
+);
+
 export const createEntity = createAsyncThunk(
   'customer/create_entity',
   async (entity: ICustomer, thunkAPI) => {
@@ -81,6 +90,10 @@ export const CustomerSlice = createEntitySlice({
   extraReducers(builder) {
     builder
       .addCase(getEntity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.entity = action.payload.data;
+      })
+      .addCase(getEntityByUser.fulfilled, (state, action) => {
         state.loading = false;
         state.entity = action.payload.data;
       })

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Button, Row, Col, FormText } from 'reactstrap';
+import { Button, ButtonGroup, Row, Col, FormText, Label } from 'reactstrap';
 import { isNumber, ValidatedField, ValidatedForm, ValidatedBlobField } from 'react-jhipster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -11,13 +11,16 @@ import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { IPayment } from 'app/shared/model/payment.model';
 import { getEntities as getPayments } from 'app/entities/payment/payment.reducer';
 import { ICustomer } from 'app/shared/model/customer.model';
-import { getEntities as getCustomers } from 'app/entities/customer/customer.reducer';
+import { getEntities as getCustomers, getEntityByUser } from 'app/entities/customer/customer.reducer';
+import { getEntityByUser as getCustomerByUser } from 'app/entities/customer/customer.reducer';
 import { IBooking } from 'app/shared/model/booking.model';
 import { LoadSize } from 'app/shared/model/enumerations/load-size.model';
 import { ServiceType } from 'app/shared/model/enumerations/service-type.model';
 import { getEntity, updateEntity, createEntity, reset } from './booking.reducer';
 
 export const BookingUpdate = () => {
+  const [rSelected, setRSelected] = useState(null);
+  const [rService, setService] = useState(null);
   const dispatch = useAppDispatch();
 
   const navigate = useNavigate();
@@ -27,6 +30,8 @@ export const BookingUpdate = () => {
 
   const payments = useAppSelector(state => state.payment.entities);
   const customers = useAppSelector(state => state.customer.entities);
+  const customer = useAppSelector(state => state.customer.entity);
+  const account = useAppSelector(state => state.authentication.account);
   const bookingEntity = useAppSelector(state => state.booking.entity);
   const loading = useAppSelector(state => state.booking.loading);
   const updating = useAppSelector(state => state.booking.updating);
@@ -44,9 +49,11 @@ export const BookingUpdate = () => {
     } else {
       dispatch(getEntity(id));
     }
+    setRSelected(bookingEntity.loadSize);
 
     dispatch(getPayments({}));
     dispatch(getCustomers({}));
+    dispatch(getEntityByUser(account.id));
   }, []);
 
   useEffect(() => {
@@ -57,12 +64,14 @@ export const BookingUpdate = () => {
 
   const saveEntity = values => {
     values.created = convertDateTimeToServer(values.created);
+    values.loadSize = rSelected;
+    values.serviceType = rService;
 
     const entity = {
       ...bookingEntity,
       ...values,
       payment: payments.find(it => it.id.toString() === values.payment.toString()),
-      customer: customers.find(it => it.id.toString() === values.customer.toString()),
+      customer: customer,
     };
 
     if (isNew) {
@@ -76,6 +85,7 @@ export const BookingUpdate = () => {
     isNew
       ? {
           created: displayDefaultDateTime(),
+          customer: customer?.id,
         }
       : {
           loadSize: 'S',
@@ -85,6 +95,14 @@ export const BookingUpdate = () => {
           payment: bookingEntity?.payment?.id,
           customer: bookingEntity?.customer?.id,
         };
+
+  function updateLoad(loadSizeUnit: string) {
+    setRSelected(loadSizeUnit);
+  }
+
+  function updateServiceType(serviceType: string) {
+    setService(serviceType);
+  }
 
   return (
     <div>
@@ -104,7 +122,7 @@ export const BookingUpdate = () => {
               {!isNew ? <ValidatedField name="id" required readOnly id="booking-id" label="ID" validate={{ required: true }} /> : null}
               <ValidatedField label="Description" id="booking-description" name="description" data-cy="description" type="textarea" />
               <ValidatedField
-                label="Pick Date"
+                label="Pickup Date"
                 id="booking-pickDate"
                 name="pickDate"
                 data-cy="pickDate"
@@ -123,22 +141,26 @@ export const BookingUpdate = () => {
                   required: { value: true, message: 'This field is required.' },
                 }}
               />
-              <ValidatedField label="Load Size" id="booking-loadSize" name="loadSize" data-cy="loadSize" type="select">
-                {loadSizeValues.map(loadSize => (
-                  <option value={loadSize} key={loadSize}>
-                    {loadSize}
-                  </option>
+              <Label>Load size </Label>
+              <br />
+              <ButtonGroup id="booking-loadSize" name="loadSize" data-cy="loadSize">
+                {loadSizeValues.map(loadSizeUnit => (
+                  <Button color="primary" outline onClick={() => updateLoad(loadSizeUnit)} active={rSelected === loadSizeUnit}>
+                    {loadSizeUnit}
+                  </Button>
                 ))}
-              </ValidatedField>
-              <ValidatedField label="Service Type" id="booking-serviceType" name="serviceType" data-cy="serviceType" type="select">
+              </ButtonGroup>
+              <br />
+              <Label>Service type </Label>
+              <br />
+              <ButtonGroup id="booking-serviceType" name="serviceType" data-cy="serviceType">
                 {serviceTypeValues.map(serviceType => (
-                  <option value={serviceType} key={serviceType}>
+                  <Button color="primary" outline onClick={() => updateServiceType(serviceType)} active={rService === serviceType}>
                     {serviceType}
-                  </option>
+                  </Button>
                 ))}
-              </ValidatedField>
+              </ButtonGroup>
               <ValidatedBlobField label="Image" id="booking-image" name="image" data-cy="image" isImage accept="image/*" />
-              <ValidatedField label="Status" id="booking-status" name="status" data-cy="status" type="text" />
               <ValidatedField
                 label="Created"
                 id="booking-created"
@@ -153,16 +175,6 @@ export const BookingUpdate = () => {
                   ? payments.map(otherEntity => (
                       <option value={otherEntity.id} key={otherEntity.id}>
                         {otherEntity.id}
-                      </option>
-                    ))
-                  : null}
-              </ValidatedField>
-              <ValidatedField id="booking-customer" name="customer" data-cy="customer" label="Customer" type="select" required>
-                <option value="" key="0" />
-                {customers
-                  ? customers.map(otherEntity => (
-                      <option value={otherEntity.id} key={otherEntity.id}>
-                        {otherEntity.login}
                       </option>
                     ))
                   : null}
